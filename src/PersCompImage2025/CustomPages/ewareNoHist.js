@@ -24,7 +24,6 @@
 	// determine is this is a wap page
 	
 	var Accept=new String(Request.ServerVariables("HTTP_ACCEPT"));
-	var IsWap=(Accept.indexOf("wml")!=-1);
 
 	var Button_Default="1", Button_Delete="2", Button_Continue="4";
 
@@ -60,19 +59,9 @@
 
 	var Head,Body,EndBody;
 	
-	if (IsWap)
-	{
-		Response.ContentType = "text/vnd.wap.wml";
-		Head="<?xml version=\"1.0\"?><!DOCTYPE wml PUBLIC \"-//WAPFORUM//DTD WML 1.1//EN\" \"http://www.wapforum.org/DTD/wml_1.1.xml\"><wml>";
-		Body="<card id=\"s\">";
-		EndBody="</card></wml>";
-	}
-	else
-	{
-		Head="<HTML><HEAD><LINK REL=\"stylesheet\" HREF=\"/"+sInstallName+"\/Themes\/"+CRM.UserOption("PreferredCSSTheme")+".css\"><META http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
-		Body="<BODY>";
-		EndBody="</BODY></HTML>";
-	}
+	Head="<HTML><HEAD><LINK REL=\"stylesheet\" HREF=\"/"+sInstallName+"\/Themes\/"+CRM.UserOption("PreferredCSSTheme")+".css\"><META http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
+	Body="<BODY>";
+	EndBody="</BODY></HTML>";
 	
 	// this function is quite useful
 	

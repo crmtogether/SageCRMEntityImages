@@ -9,7 +9,7 @@ const avatarColors = {
     K44: "#5856D6",
 }
 let crmVersion = '';
-let defaultAvatarColor = "#00D639";//if 2024 all colors sage green
+let defaultAvatarColor = "#00A159";//if 2024 all colors sage green
 
 crm.ready(function() {
 
