@@ -1,0 +1,5 @@
+Description=crmtogether.com - Display Image in Person and Company context
+Directory=PersCompImage2025
+Version=2023
+multipleinstalls=y
+errorhandling=strict
