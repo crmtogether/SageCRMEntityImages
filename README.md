@@ -3,7 +3,7 @@ Improving the user interface in Sage CRM showing company icons and more
 
 Company Icon
 
-<img src="sage crm company 3.png" width="200" height="400"  />
+<img src="sage crm company 3.png" height="200"  />
 
 Company Initials
 
