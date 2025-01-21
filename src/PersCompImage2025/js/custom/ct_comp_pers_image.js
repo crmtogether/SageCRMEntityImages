@@ -65,10 +65,13 @@ crm.ready(function() {
         if (companyContext) {
             ctimglog('companyContext:' + companyContext);
             const txtC = getInitials(imagesObj.compName);
-
+			ctimglog('companyContext txtC:' + txtC);
+			ctimglog('companyContext companyImageUrl:' + imagesObj.companyImageUrl);
+			//have we stored a version?
             if (imagesObj.companyImageUrl.indexOf("favicon.jpg") > -1) {
                 checkImage(imagesObj.companyImageUrl, function(ev) {
                     const actualW = ev.target.width;
+					ctimglog('actualW:' + actualW);
                     if (actualW < 32) return;
                     if (actualW < 40) {
                         TOPHEADING.appendChild(ev.target);
@@ -77,7 +80,7 @@ crm.ready(function() {
                         ev.target.style.left = '10px';
                         ev.target.style.top = '-20px';
 						ev.target.style.borderRadius= '8px';
-                    } else if (actualW < 300) {
+                    } else if (actualW < 3000) {
                         TOPHEADING.appendChild(ev.target);
                         ev.target.style.width = '40px';
                         ev.target.style.height = 'auto !important';
@@ -89,7 +92,7 @@ crm.ready(function() {
                         setMainImage(TOPHEADING, imagesObj.companyImageUrl, txtC);
                     }
                 });
-            } else {
+            } else {						
                 setMainImage(TOPHEADING, imagesObj.companyImageUrl, txtC);
             }
         } else if (personContext) {
@@ -107,7 +110,8 @@ crm.ready(function() {
                     Object.assign(img.style, {
                         position: 'relative',
                         right: "-20px",
-                        top: "-20px",
+                        top: "-40px",
+						zIndex :0,
                         width: "30px",
                         height: 'auto',
                         borderRadius: '8px',
@@ -195,6 +199,8 @@ function setMainImage(container, imageUrl, text) {
 	ctimglog('setMainImage:'+container);
 	ctimglog('setMainImage imageUrl:'+imageUrl);
 	
+	//var _imgx=createImageMain(imageUrl,99);
+	
     if(imageUrl=='' && text == '') return;
     let fc = container.firstChild;
 	
@@ -203,32 +209,41 @@ function setMainImage(container, imageUrl, text) {
         createAvatar(container,text);
         return;
     };
-	
+	ctimglog('fc.nodeName:'+fc.nodeName);
 	if (fc.nodeName== 'A') {
 		targetImgEl = document.createElement('img');
 		targetImgEl.src=imageUrl;
 		Object.assign(targetImgEl.style, {
 			width:'40px',
 			height:'40px',
+			zIndex :1,
 			borderRadius:'8px',
-			objectFit:'contain'
+			objectFit:'cover',
+			position: 'relative',
+			right: "-10px",
+			top: "-20px",
 		});
 		container.appendChild(targetImgEl);
 		fc.remove();
 	} else if(fc.nodeName== 'IMG') {
-		targetImgEl=container.firstChild;
+		//targetImgEl=container.firstChild;
+		targetImgEl = document.createElement('img');
 		targetImgEl.src=imageUrl;
 		Object.assign(targetImgEl.style, {
 			width:'40px',
 			height:'40px',
+			zIndex :1,
 			borderRadius:'8px',
-			objectFit:'contain'
+			objectFit:'cover',
+			position: 'relative',
+			right: "-10px",
+			top: "-20px",
 		});
-		//container.appendChild(targetImgEl);
+		container.appendChild(targetImgEl);
 		//fc.remove();
 	}	
 	else {
-		ctimglog('xxxx');
+		ctimglog('default');
 		targetImgEl = container.firstChild;
 	}    
 }
