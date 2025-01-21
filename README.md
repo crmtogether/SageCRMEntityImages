@@ -2,22 +2,28 @@
 Improving the user interface in Sage CRM showing company icons and more
 
 Company Icon
-<img src="sage crm company 3.png" />
+
+<img src="sage crm company 3.png" height="200"  />
 
 Company Initials
-<img src="sage crm company.png" />
+
+<img src="sage crm company.png" height="200" />
 
 Person Icon
-<img src="sage crm person2.png" />
+
+<img src="sage crm person2.png" height="200" />
 
 Person Initials
-<img src="sage crm person.png" />
+
+<img src="sage crm person.png" height="200" />
 
 Opportunity
-<img src="sage crm opportunity.png" />
+
+<img src="sage crm opportunity.png" height="200" />
 
 Case
-<img src="sage crm case.png" />
+
+<img src="sage crm case.png" height="200" />
 
 Created by 
 
