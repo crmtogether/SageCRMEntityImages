@@ -1,4 +1,7 @@
-
+function ctimglog(arg){
+	if (false)
+		console.log(arg)
+}
 const avatarColors = {
     K2 : "#34AADC",
     K1: "#FF9500",    
@@ -28,99 +31,114 @@ crm.ready(function() {
     
 
     if (personContext || companyContext || caseContext || oppoContext || ordeContext || quoteContext || leadContext) {
+		ctimglog('known context found');
         const TOPHEADING=document.querySelector('td.TOPHEADING');
         if (!TOPHEADING) return;
-        jQuery.ajax({
-            url: crm.url('/getLibrary.asp'),
-            success: function (imagesObj) {   
-                crmVersion = parseInt(imagesObj.crmVersion);
-                if (crmVersion>=2024) {
-                    Object.assign(avatarColors, {
-                        K2 : defaultAvatarColor,
-                        K1: defaultAvatarColor,    
-                        K8: defaultAvatarColor,
-                        K7: defaultAvatarColor,
-                        K71: defaultAvatarColor,
-                        K86: defaultAvatarColor,
-                        K44: defaultAvatarColor
-                    })                    
-                }
-
-                if (companyContext) {
-                    const txtC = getInitials(imagesObj.compName);
-                    
-                    if (imagesObj.companyImageUrl.indexOf("favicon.jpg") > -1) {
-                        checkImage(imagesObj.companyImageUrl, function(ev) {   
-                            const actualW = ev.target.width;
-                            if (actualW < 32) return;
-                            if ( actualW < 40 ) {                                
-                                TOPHEADING.appendChild(ev.target);
-                                ev.target.style.width=actualW+'px';
-                                ev.target.style.height='auto !important';
-                                ev.target.style.left='10px';
-                                ev.target.style.top='-20px';
-                                
-                            } else {                        
-                                setMainImage(TOPHEADING,imagesObj.companyImageUrl,txtC)
-                            }
-                        });
-                    } else {             
-                        setMainImage(TOPHEADING,imagesObj.companyImageUrl,txtC)
-                    }
+	var furl=crm.url('/ctentityimages/getLibrary.asp');
+	ctimglog(furl);
+	fetch(furl, {
+		method: 'GET',
+		cache: 'no-store'
+	})
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(imagesObj => {
+        crmVersion = parseInt(imagesObj.crmVersion);
+        ctimglog('crmVersion:' + crmVersion);
         
-                } else if (personContext) {        
-                
-                    if (imagesObj.persName == "") 
-                        setMainImage(TOPHEADING,imagesObj.personImageUrl,"");
-                    else 
-                        setMainImage(TOPHEADING,imagesObj.personImageUrl,getInitials(imagesObj.persName));
+        if (crmVersion >= 2024) {
+            Object.assign(avatarColors, {
+                K2: defaultAvatarColor,
+                K1: defaultAvatarColor,
+                K8: defaultAvatarColor,
+                K7: defaultAvatarColor,
+                K71: defaultAvatarColor,
+                K86: defaultAvatarColor,
+                K44: defaultAvatarColor
+            });
+        }
 
+        if (companyContext) {
+            ctimglog('companyContext:' + companyContext);
+            const txtC = getInitials(imagesObj.compName);
 
-                    if (imagesObj.companyImageUrl!="") {
-                        
-                        var img = new Image();
-                        img.src = imagesObj.companyImageUrl;                      
-                        img.onload=function() {
-                            
-                            Object.assign(img.style, {
-                                position:'relative',
-                                right:"-20px",
-                                top:"-20px",
-                                width:"30px",
-								height:'auto',
-                                borderRadius:'4px',
-                                backgroundColor: "#fff"
-                            });
-							
-                            TOPHEADING.appendChild(img);
-                        }
+            if (imagesObj.companyImageUrl.indexOf("favicon.jpg") > -1) {
+                checkImage(imagesObj.companyImageUrl, function(ev) {
+                    const actualW = ev.target.width;
+                    if (actualW < 32) return;
+                    if (actualW < 40) {
+                        TOPHEADING.appendChild(ev.target);
+                        ev.target.style.width = actualW + 'px';
+                        ev.target.style.height = 'auto !important';
+                        ev.target.style.left = '10px';
+                        ev.target.style.top = '-20px';
+						ev.target.style.borderRadius= '8px';
+                    } else if (actualW < 300) {
+                        TOPHEADING.appendChild(ev.target);
+                        ev.target.style.width = '40px';
+                        ev.target.style.height = 'auto !important';
+                        ev.target.style.left = '10px';
+                        ev.target.style.top = '-20px';
+						ev.target.style.borderRadius= '8px';
+                    }else{
+						//using this takes over the whole icon
+                        setMainImage(TOPHEADING, imagesObj.companyImageUrl, txtC);
                     }
-                } else if (caseContext|| oppoContext || ordeContext || quoteContext || leadContext) {
-                    const badgeEl = document.createElement("div");
-                    badgeEl.innerText=imagesObj.useRef;
-                    Object.assign(badgeEl.style, {
-                        position:'relative',
-                        right:"-20px",
-                        top:"-40px",
-                        color:"#fff",
-                        borderRadius:'4px',
-                        backgroundColor: "#ED1C5F",
-                        fontSize:'10px',
-                        fontWeight:'bold'
-                    });
-                    TOPHEADING.appendChild(badgeEl);
-                    createAvatarGroup(TOPHEADING, [imagesObj.companyImageUrl, imagesObj.personImageUrl], 
-                        [imagesObj.compName, imagesObj.persName]);
-                    
+                });
+            } else {
+                setMainImage(TOPHEADING, imagesObj.companyImageUrl, txtC);
+            }
+        } else if (personContext) {
+            ctimglog('personContext:' + personContext);
+            if (imagesObj.persName === "") {
+                setMainImage(TOPHEADING, imagesObj.personImageUrl, "");
+            } else {
+                setMainImage(TOPHEADING, imagesObj.personImageUrl, getInitials(imagesObj.persName));
+            }
 
-                } // end case context
-            },
-            error: function(error) {
-                console.error(error);
-            },
-            
-            cache: false
-        });
+            if (imagesObj.companyImageUrl !== "") {
+                const img = new Image();
+                img.src = imagesObj.companyImageUrl;
+                img.onload = function() {
+                    Object.assign(img.style, {
+                        position: 'relative',
+                        right: "-20px",
+                        top: "-20px",
+                        width: "30px",
+                        height: 'auto',
+                        borderRadius: '8px',
+                        backgroundColor: "#fff"
+                    });
+                    TOPHEADING.appendChild(img);
+                };
+            }
+        } else if (caseContext || oppoContext || ordeContext || quoteContext || leadContext) {
+            const badgeEl = document.createElement("div");
+            badgeEl.innerText = imagesObj.useRef;
+            Object.assign(badgeEl.style, {
+                position: 'relative',
+                right: "-20px",
+                top: "-40px",
+                color: "#fff",
+                borderRadius: '8px',
+                backgroundColor: "#ED1C5F",
+                fontSize: '10px',
+                fontWeight: 'bold'
+            });
+            TOPHEADING.appendChild(badgeEl);
+            createAvatarGroup(TOPHEADING, [imagesObj.companyImageUrl, imagesObj.personImageUrl], 
+                [imagesObj.compName, imagesObj.persName]);
+        }
+    })
+    .catch(error => {
+		ctimglog('Error in fetch');
+		ctimglog(error);
+        console.error(error);
+    });
     }
 });
 
@@ -174,6 +192,9 @@ function getInitialsA(txt){
 
 function setMainImage(container, imageUrl, text) { 
     
+	ctimglog('setMainImage:'+container);
+	ctimglog('setMainImage imageUrl:'+imageUrl);
+	
     if(imageUrl=='' && text == '') return;
     let fc = container.firstChild;
 	
@@ -207,6 +228,7 @@ function setMainImage(container, imageUrl, text) {
 		//fc.remove();
 	}	
 	else {
+		ctimglog('xxxx');
 		targetImgEl = container.firstChild;
 	}    
 }

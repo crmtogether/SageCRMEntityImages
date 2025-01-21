@@ -15,5 +15,5 @@ Captions['DE']='Company Image';
 AddCaption();
 
 CopyAspTo('js\\custom\\ct_comp_pers_image.js','js\\custom\\ct_comp_pers_image.js');
-CopyAspTo('custompages\\getLibrary.asp','custompages\\getLibrary.asp');
-CopyAspTo('custompages\\ewareNoHist.js','custompages\\ewareNoHist.js');
+CopyAspTo('custompages\\ctentityimages\\getLibrary.asp','custompages\\ctentityimages\\getLibrary.asp');
+CopyAspTo('custompages\\ctentityimages\\sagecrmNoHist.js','custompages\\ctentityimages\\sagecrmNoHist.js');

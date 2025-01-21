@@ -1,8 +1,10 @@
 <% @LANGUAGE=JScript %>
-<!-- #include file ="ewareNoHist.js" -->
+<!-- #include file ="sagecrmNoHist.js" -->
 <%
 
 var DEBUG=false;
+if (!DEBUG)
+	Response.ContentType = "application/json";
 
 var Key0=Request.QueryString('Key0');
 var pictureURL='';
@@ -24,11 +26,6 @@ if (Key0==1) {
         images.personImageUrl= getPersonImage(myRecord("pers_personid"));
         images.persName=myRecord("pers_fullname");
     }
-
-
-
-
-
 } else if (Key0==2) {
 
     var myRecord =  eWare.FindRecord("Person, vSummaryPerson", "pers_personid="+ eWare.GetContextInfo("person","pers_personid"));
@@ -39,12 +36,9 @@ if (Key0==1) {
         images.companyImageUrl =  getCompanyImage(myRecord);
         images.compName=myRecord('comp_name');
     }
-
-
-
 } else if (Key0==8) {
     var myRecord =  eWare.FindRecord("Cases, vSummaryCase", "case_caseid="+ eWare.GetContextInfo("Cases","case_caseid"));
-    images.useRef = "Stage:"+ myRecord("Case_stage");
+    images.useRef = CRM.GetTrans("Case_stage",myRecord("Case_stage"));
     log(myRecord("Case_PrimaryPersonId"))
     if (Defined(myRecord("Case_PrimaryPersonId"))) {
         var persRecord =  eWare.FindRecord("Person, vSummaryPerson", "pers_personid="+ myRecord("Case_PrimaryPersonId"));
@@ -64,7 +58,7 @@ if (Key0==1) {
 
 } else if (Key0==7) {
     var myRecord =  eWare.FindRecord("Opportunity, vSummaryOpportunity", "oppo_opportunityid="+ eWare.GetContextInfo("Opportunity","oppo_opportunityid"));
-    images.useRef = "Stage:"+ myRecord("oppo_Stage");
+    images.useRef = CRM.GetTrans("oppo_Stage",myRecord("oppo_Stage"));
     if (Defined(myRecord("oppo_PrimaryPersonId"))) {
         var persRecord =  eWare.FindRecord("Person, vSummaryPerson", "pers_personid="+ myRecord("oppo_PrimaryPersonId"));
         if (!persRecord.eof) {
@@ -83,8 +77,7 @@ if (Key0==1) {
 
 } else if (Key0==71) {
     var myRecord =  eWare.FindRecord("Orders, vSummaryOrder", "orde_orderquoteid="+ eWare.GetContextInfo("Orders","orde_orderquoteid"));
-    images.useRef = "Stage:"+ myRecord("orde_stage");
-
+    images.useRef = CRM.GetTrans("orde_stage",myRecord("orde_stage"));
 
     oppoRecord = eWare.FindRecord("Opportunity", "oppo_quoteorderid=" + myRecord("orde_orderquoteid"))
 
@@ -107,7 +100,7 @@ if (Key0==1) {
 } else if (Key0==86) {
 
     var myRecord =  eWare.FindRecord("Quotes, vSummaryQuote", "quot_orderquoteid="+ eWare.GetContextInfo("Quotes","quot_orderquoteid"));
-    images.useRef = "Status:"+ myRecord("quot_status");
+    images.useRef = CRM.GetTrans("quot_status",myRecord("quot_status"));
 
 
     oppoRecord = eWare.FindRecord("Opportunity", "oppo_quoteorderid=" + myRecord("quot_orderquoteid"))
@@ -129,7 +122,7 @@ if (Key0==1) {
     }
 } else if (Key0==44) {
     var myRecord =  eWare.FindRecord("Lead, vSummaryLead", "lead_leadid="+ eWare.GetContextInfo("Lead","lead_leadid"));
-    images.useRef = "Stage:"+ myRecord("lead_stage");
+    images.useRef =  CRM.GetTrans("lead_stage",myRecord("lead_stage"));
     
     if (Defined(myRecord("lead_primarypersonid"))) {
         var persRecord =  eWare.FindRecord("Person, vSummaryPerson", "pers_personid="+ myRecord("lead_primarypersonid"));
@@ -150,12 +143,8 @@ if (Key0==1) {
         }
     } else {
         images.compName=myRecord("lead_companyname") || "";
-
     }
-
 }
-
-
 
 var param = eWare.FindRecord("Custom_SysParams", "parm_name= 'version'");
 version = parseInt(param("parm_value"));
@@ -163,7 +152,6 @@ version = parseInt(param("parm_value"));
 if(!DEBUG)
     Response.Clear();
 
-Response.ContentType = "application/json";
 Response.Write('{"crmVersion":"'+version+'","companyImageUrl": "'+images.companyImageUrl+'","compName":"'+myEscape(images.compName)+'" ,"personImageUrl":"'+images.personImageUrl+'","persName":"'+images.persName+'", "useRef":"'+images.useRef+'"}');
 Response.End();
 
@@ -220,10 +208,13 @@ function myEscape(input) {
 function getFaviconUrl(targetUrl, companyRecord) {    
     var libr_companyid = companyRecord("comp_companyid");
     var comp_librarydir= companyRecord("comp_librarydir");
+	 log("getFaviconUrl comp_librarydir:"+comp_librarydir);
+	 if (!Defined(comp_librarydir))
+	    comp_librarydir="";
     var xmlhttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");//Msxml2.ServerXMLHTTP.6.0
     //xmlhttp.setTimeouts(5000,5000,5000,5000);
     xmlhttp.open("GET", targetUrl, false);
-    log(targetUrl);
+    log("URL:"+targetUrl);
 
     try {
         xmlhttp.send();
@@ -232,7 +223,6 @@ function getFaviconUrl(targetUrl, companyRecord) {
         return "";
     }
 
-    
     if (xmlhttp.status == 200) {
         var responseText = xmlhttp.responseText;
         //log(responseText);
@@ -241,6 +231,7 @@ function getFaviconUrl(targetUrl, companyRecord) {
         var match = responseText.match(regex);
         
         if (match) {
+			log("match found");
             // Extract the href attribute from the matched tag
             var hrefRegex = /href=["']([^"']+)["']/i;
             var hrefMatch = match[0].match(hrefRegex);
@@ -256,25 +247,22 @@ function getFaviconUrl(targetUrl, companyRecord) {
                 
                 
                 log("found icon path:"+iconPath);
-
-
+			
                 var xmlHttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");                
                 xmlHttp.open("GET", iconPath, false);
 
                 try {
                     xmlHttp.send();
                 } catch(e) {
-                    Response.Write(e.message)
+                    log(e.message);
                     return "";
                 }
                 
-                
-                Response.Write("status:" + xmlHttp.Status)
-                
-                
+                log("status:" + xmlHttp.Status)
+              
                 if (xmlHttp.Status == 200) {
 				
-					log(comp_librarydir);
+					log("comp_librarydir:"+comp_librarydir);
 					if (comp_librarydir.indexOf('\\') == -1) {
 					
 						comp_librarydir = companyRecord("comp_name").substr(0,1) + "\\" + companyRecord("comp_name");
@@ -283,47 +271,50 @@ function getFaviconUrl(targetUrl, companyRecord) {
 					var fso = Server.CreateObject("Scripting.FileSystemObject");
                     var Libr_FilePath = comp_librarydir;
                     var libr_filename = libr_companyid + "_favicon.jpg";
-                    var localPath = Server.MapPath("../../library/"+ Libr_FilePath + "/"+ libr_filename);
-					log(localPath)
-					if (!fso.FolderExists(Server.MapPath("../../library/"+ Libr_FilePath))) {
-						fso.CreateFolder(Server.MapPath("../../library/"+ Libr_FilePath));
+                    var localPath = Server.MapPath("../../../library/"+ Libr_FilePath + "/"+ libr_filename);
+					log("localPath");
+					log(localPath);
+					if (!fso.FolderExists(Server.MapPath("../../../library/"+ Libr_FilePath))) {
+						log("create folder");
+						fso.CreateFolder(Server.MapPath("../../../library/"+ Libr_FilePath));
 					};
-					
-                    
 
                     var imageData = xmlHttp.responseBody;
+					if (!imageData)
+						log("no image data");
+					if (imageData)						{
+						var objADOStream = Server.CreateObject("ADODB.Stream")
+						objADOStream.open();
+						objADOStream.Type = 1; 
+						objADOStream.Write(imageData);
+						objADOStream.Position = 0;
+						
+						objADOStream.saveToFile(localPath);
+						objADOStream.close();
+						objADOStream = null;
+						fso=null;
 
-                    var objADOStream = Server.CreateObject("ADODB.Stream")
-                    objADOStream.open();
-                    objADOStream.Type = 1; 
-                    objADOStream.Write(imageData);
-                    objADOStream.Position = 0;
-                    
-                
-                    objADOStream.saveToFile(localPath);
-                    objADOStream.close();
-                    objADOStream = null;
-                    fso=null;
-
-                    var newLib = eWare.CreateRecord("library");
-                    newLib.libr_filename=libr_filename;
-                    newLib.Libr_FilePath=Libr_FilePath;
-                    newLib.libr_companyid=libr_companyid;
-                    newLib.libr_type='CompanyImage';
-                    newLib.SaveChanges();
-
+						var newLib = eWare.CreateRecord("library");
+						newLib.libr_filename=libr_filename;
+						newLib.Libr_FilePath=Libr_FilePath;
+						newLib.libr_companyid=libr_companyid;
+						newLib.libr_type='CompanyImage';
+						newLib.SaveChanges();
+					}
+					if (!imageData)
+						return '';
                     return  '/'+sInstallName + '/eware.dll/Do?SID='+SID+'&Act=1282&Mode=0&FileName=' + myEscape(Libr_FilePath) + "\\\\" + myEscape(libr_filename);
                 } else {
-                    Response.Write(xmlHttp.Status)
+                    log(xmlHttp.Status)
                     return "";
                 }
 
             }
         } else {
-            Response.Write('no match') 
+            log('no match') 
         }//end match
     } else {
-        Response.Write("status:" + xmlhttp.status);
+        log("status:" + xmlhttp.status);
     }
     return "";
 }
