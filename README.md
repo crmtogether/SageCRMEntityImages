@@ -35,3 +35,6 @@ Leading Edge - https://leadingedge.ro
 
 If you have any ideas for improvements or would like to contribute get in touch!
 
+--
+27 Jan 2025
+-fix for fetching and saving of images to CRM

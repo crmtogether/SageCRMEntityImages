@@ -280,9 +280,6 @@ function getFaviconUrl(targetUrl, companyRecord) {
 					};
 
                     var imageData = xmlHttp.responseBody;
-					if (!imageData)
-						log("no image data");
-					if (imageData)						{
 						var objADOStream = Server.CreateObject("ADODB.Stream")
 						objADOStream.open();
 						objADOStream.Type = 1; 
@@ -300,12 +297,11 @@ function getFaviconUrl(targetUrl, companyRecord) {
 						newLib.libr_companyid=libr_companyid;
 						newLib.libr_type='CompanyImage';
 						newLib.SaveChanges();
-					}
-					if (!imageData)
-						return '';
+						xmlHttp=null;
                     return  '/'+sInstallName + '/eware.dll/Do?SID='+SID+'&Act=1282&Mode=0&FileName=' + myEscape(Libr_FilePath) + "\\\\" + myEscape(libr_filename);
                 } else {
-                    log(xmlHttp.Status)
+                    log(xmlHttp.Status);
+					xmlHttp=null;
                     return "";
                 }
 
@@ -316,6 +312,7 @@ function getFaviconUrl(targetUrl, companyRecord) {
     } else {
         log("status:" + xmlhttp.status);
     }
+	xmlHttp=null;
     return "";
 }
 
