@@ -1,5 +1,9 @@
 # SageCRMEntityImages
-Improving the user interface in Sage CRM showing company icons and more
+Improving the user interface in Sage CRM showing company icons and more. 
+
+The system tries to get a company icon from the website (if there is one set in comp_website) and adds that to the library.
+
+Below is how this is rendered in Sage CRM.
 
 Company Icon
 
