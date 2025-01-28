@@ -15,7 +15,8 @@ var images = {
     personImageUrl:'',
     persName:'',
     useRef: '',
-    crmVersion: ''
+    crmVersion: '',
+	urlused:''
 };
 
 if (Key0==1) {
@@ -152,7 +153,7 @@ version = parseInt(param("parm_value"));
 if(!DEBUG)
     Response.Clear();
 
-Response.Write('{"crmVersion":"'+version+'","companyImageUrl": "'+images.companyImageUrl+'","compName":"'+myEscape(images.compName)+'" ,"personImageUrl":"'+images.personImageUrl+'","persName":"'+images.persName+'", "useRef":"'+images.useRef+'"}');
+Response.Write('{"crmVersion":"'+version+'","companyImageUrl": "'+images.companyImageUrl+'","compName":"'+myEscape(images.compName)+'" ,"personImageUrl":"'+images.personImageUrl+'","persName":"'+images.persName+'", "useRef":"'+images.useRef+'","urlused":"'+images.urlused+'"}');
 Response.End();
 
 //------------------
@@ -175,6 +176,8 @@ function getCompanyImage(companyRecord) {
         
         if (website.indexOf('https://')==-1 && website.indexOf('http://')==-1) 
             website = 'https://' + website;
+		else if (website.indexOf('http://')==0) 
+		    website = 'https://' + website.substr(7);
 
         pictureURL = getFaviconUrl(website,companyRecord);
         
@@ -199,9 +202,9 @@ function myEscape(input) {
     if (!input) return "";
 
     var str = input.toString();
-    str = str.replace(/\\/g, '\\\\');         
-    
-    return str; 
+    //str = str.replace(/\\/g, '\\\\');         
+ 
+    return encodeURIComponent(str); 
 }
 
 
@@ -212,17 +215,28 @@ function getFaviconUrl(targetUrl, companyRecord) {
 	 if (!Defined(comp_librarydir))
 	    comp_librarydir="";
     var xmlhttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");//Msxml2.ServerXMLHTTP.6.0
-    //xmlhttp.setTimeouts(5000,5000,5000,5000);
     xmlhttp.open("GET", targetUrl, false);
     log("URL:"+targetUrl);
 
     try {
+		xmlhttp.setRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0");
+		xmlhttp.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         xmlhttp.send();
     } catch(e) {
         Response.Write("error" + targetUrl + ">>>"+e.message)
         return "";
     }
-
+    if (xmlhttp.status == 503) {
+		log("trying again as "+xmlhttp.status);
+		log("new url is.."+targetUrl+"//favicon.ico");
+		xmlhttp.open("GET", targetUrl+"//favicon.ico", false);
+		try {
+			xmlhttp.send();
+		} catch(e) {
+			Response.Write("error 2" + targetUrl + ">>>"+e.message)
+			return "";
+		}	  
+	}
     if (xmlhttp.status == 200) {
         var responseText = xmlhttp.responseText;
         //log(responseText);
@@ -254,7 +268,7 @@ function getFaviconUrl(targetUrl, companyRecord) {
                 try {
                     xmlHttp.send();
                 } catch(e) {
-                    log(e.message);
+                    log("request error:"+e.message);
                     return "";
                 }
                 
@@ -310,7 +324,7 @@ function getFaviconUrl(targetUrl, companyRecord) {
             log('no match') 
         }//end match
     } else {
-        log("status:" + xmlhttp.status);
+        log("status:" + xmlhttp.status+" for url:"+targetUrl);
     }
 	xmlHttp=null;
     return "";

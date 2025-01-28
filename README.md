@@ -40,5 +40,11 @@ Leading Edge - https://leadingedge.ro
 If you have any ideas for improvements or would like to contribute get in touch!
 
 --
+28 Jan 2025
+- fix for older data that have websites with http://...we now replace this with https:// as most sites have this now
+- fix for some missing url encoding which broke some company image urls
+
 27 Jan 2025
 -fix for fetching and saving of images to CRM
+
+
