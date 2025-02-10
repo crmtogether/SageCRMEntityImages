@@ -19,6 +19,26 @@ var images = {
 	urlused:''
 };
 
+function getFileExtensionFromUrl(url) {
+    // Remove any query string or fragment identifier.
+    var cleanUrl = url.split('?')[0].split('#')[0];
+
+    // Extract the filename by finding the last slash.
+    var lastSlashIndex = cleanUrl.lastIndexOf('/');
+    var filename = (lastSlashIndex !== -1) ? cleanUrl.substring(lastSlashIndex + 1) : cleanUrl;
+    
+    // Find the last dot in the filename.
+    var dotIndex = filename.lastIndexOf('.');
+    
+    // If a dot is found and it's not the last character, return the extension.
+    if (dotIndex !== -1 && dotIndex < filename.length - 1) {
+        return filename.substring(dotIndex + 1);
+    }
+    
+    // Return an empty string if no extension is found.
+    return "";
+}
+
 if (Key0==1) {
     var myRecord = eWare.FindRecord("company, vsummaryCompany", "comp_companyid="+ eWare.GetContextInfo('company','comp_companyid'));    
     images.companyImageUrl = getCompanyImage(myRecord);
@@ -165,6 +185,12 @@ function log(m) {
 
 function getCompanyImage(companyRecord) {
     var pictureURL='';
+		
+	if (DEBUG){
+		delRecord = eWare.FindRecord('library',"libr_type='CompanyImage' and libr_companyid ="+companyRecord("Comp_CompanyId"));
+		delRecord.DeleteRecord = true;
+		delRecord.SaveChanges();
+	}
     var myRecord = eWare.FindRecord('library',"libr_type='CompanyImage' and libr_companyid ="+companyRecord("Comp_CompanyId"));
     myRecord.OrderBy='libr_updateddate DESC';
 
@@ -214,13 +240,17 @@ function getFaviconUrl(targetUrl, companyRecord) {
 	 log("getFaviconUrl comp_librarydir:"+comp_librarydir);
 	 if (!Defined(comp_librarydir))
 	    comp_librarydir="";
-    var xmlhttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");//Msxml2.ServerXMLHTTP.6.0
+    //var xmlhttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");//Msxml2.ServerXMLHTTP.6.0
+	var xmlhttp = Server.CreateObject("Msxml2.ServerXMLHTTP.6.0");
     xmlhttp.open("GET", targetUrl, false);
     log("URL:"+targetUrl);
 
     try {
-		xmlhttp.setRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0");
+		xmlhttp.setRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36");
 		xmlhttp.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+		xmlhttp.setRequestHeader("Accept-Language", "en-US,en;q=0.5");
+		xmlhttp.setRequestHeader("Referer", "https://www.google.com/");
         xmlhttp.send();
     } catch(e) {
         Response.Write("error" + targetUrl + ">>>"+e.message)
@@ -236,16 +266,37 @@ function getFaviconUrl(targetUrl, companyRecord) {
 			Response.Write("error 2" + targetUrl + ">>>"+e.message)
 			return "";
 		}	  
-	}
+	}else
+	    if (xmlhttp.status == 403) {
+		log("trying again as "+xmlhttp.status);
+		log("new url is.."+targetUrl+"//favicon.ico");
+		xmlhttp.open("GET", targetUrl+"//favicon.ico", false);
+		try {
+			xmlhttp.send();
+		} catch(e) {
+			Response.Write("error 3" + targetUrl + ">>>"+e.message)
+			return "";
+		}	  
+	}else
     if (xmlhttp.status == 200) {
+		var contentType = xmlhttp.getResponseHeader("Content-Type");
+		log("Content-Type:"+contentType);
         var responseText = xmlhttp.responseText;
         //log(responseText);
         // Use a Regular Expression to find the <link rel="icon"> tag
-        var regex = /<link[^>]+rel=["']?icon["']?[^>]*>/i;
+        var regex = /<link[^>]+rel=["']?apple-touch-icon["']?[^>]*>/i;
         var match = responseText.match(regex);
-        
+		
+		if (!match) {
+		  regex = /<link[^>]+rel=["']?icon["']?[^>]*>/i;
+          match = responseText.match(regex);
+        }		
+		if (!match) {
+		  regex = /<link[^>]+rel=["']?shortcut icon["']?[^>]*>/i;
+          match = responseText.match(regex);
+        }
         if (match) {
-			log("match found");
+			log("match found"+match);
             // Extract the href attribute from the matched tag
             var hrefRegex = /href=["']([^"']+)["']/i;
             var hrefMatch = match[0].match(hrefRegex);
@@ -262,8 +313,10 @@ function getFaviconUrl(targetUrl, companyRecord) {
                 
                 log("found icon path:"+iconPath);
 			
-                var xmlHttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");                
+                var xmlHttp = Server.CreateObject("Msxml2.XMLHTTP.6.0");          
                 xmlHttp.open("GET", iconPath, false);
+				xmlHttp.setRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+					"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36");	
 
                 try {
                     xmlHttp.send();
@@ -284,10 +337,15 @@ function getFaviconUrl(targetUrl, companyRecord) {
 					
 					var fso = Server.CreateObject("Scripting.FileSystemObject");
                     var Libr_FilePath = comp_librarydir;
-                    var libr_filename = libr_companyid + "_favicon.jpg";
+					var _fext=getFileExtensionFromUrl(iconPath);
+                    var libr_filename = libr_companyid + "_favicon."+_fext;
                     var localPath = Server.MapPath("../../../library/"+ Libr_FilePath + "/"+ libr_filename);
 					log("localPath");
 					log(localPath);
+					if (fso.FileExists(localPath)) {
+						log("FileExists...so deleting");
+						fso.DeleteFile(localPath);
+					};
 					if (!fso.FolderExists(Server.MapPath("../../../library/"+ Libr_FilePath))) {
 						log("create folder");
 						fso.CreateFolder(Server.MapPath("../../../library/"+ Libr_FilePath));
@@ -298,6 +356,10 @@ function getFaviconUrl(targetUrl, companyRecord) {
 						objADOStream.open();
 						objADOStream.Type = 1; 
 						objADOStream.Write(imageData);
+						
+						var size = objADOStream.Size;
+						log("The binary data size is: " + size + " bytes");
+		
 						objADOStream.Position = 0;
 						
 						objADOStream.saveToFile(localPath);

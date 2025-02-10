@@ -40,6 +40,12 @@ Leading Edge - https://leadingedge.ro
 If you have any ideas for improvements or would like to contribute get in touch!
 
 --
+10 Feb 2025
+-Fix for non jpg images. 
+-Improved fetching of websites (added headers to work around some blocks)
+-Improved parsing to get the best image
+-In the code when you are debugging the code will delete old images (saving you having to manually do this)
+
 28 Jan 2025
 - fix for older data that have websites with http://...we now replace this with https:// as most sites have this now
 - fix for some missing url encoding which broke some company image urls

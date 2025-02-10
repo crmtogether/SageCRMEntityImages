@@ -1,5 +1,5 @@
 function ctimglog(arg){
-	if (false)
+	if (true)
 		console.log(arg)
 }
 const avatarColors = {
@@ -68,7 +68,7 @@ crm.ready(function() {
 			ctimglog('companyContext txtC:' + txtC);
 			ctimglog('companyContext companyImageUrl:' + imagesObj.companyImageUrl);
 			//have we stored a version?
-            if (imagesObj.companyImageUrl.indexOf("favicon.jpg") > -1) {
+            if (imagesObj.companyImageUrl.indexOf("favicon.") > -1) {
                 checkImage(imagesObj.companyImageUrl, function(ev) {
                     const actualW = ev.target.width;
 					ctimglog('actualW:' + actualW);
